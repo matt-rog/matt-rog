@@ -31,10 +31,12 @@ fn handle_connection(mut stream: TcpStream) {
 
     println!("{:#?}", http_request);
     let request_line = &http_request.first();
-
+    let request_line_parts: Vec<_> = request_line.unwrap().split(" ").collect();
+    let directory = request_line_parts[1];
+    println!("{}", directory);
     let contents;
 
-    if request_line.unwrap() == "GET /favicon.ico HTTP/1.1" {
+    if directory == "/favicon.ico" {
         contents = fs::read("static/icons/favicon.ico").unwrap();
 
     } else {
