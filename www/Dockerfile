@@ -1,8 +1,8 @@
 FROM rust:alpine3.18
 
-EXPOSE 80
+EXPOSE 8080
 
-ENV MRC_PORT="80"
+ENV MRC_PORT="8080"
 
 COPY ./ ./
 
