@@ -37,7 +37,7 @@ fn handle_connection(mut stream: TcpStream) {
         let contents;
 
         if directory == "/favicon.ico" {
-            contents = fs::read("static/icons/favicon.ico").unwrap();
+            contents = fs::read("static/icons/favicon.png").unwrap();
 
         } else {
             contents = fs::read("content/index.html").unwrap();
