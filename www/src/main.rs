@@ -35,19 +35,25 @@ fn handle_connection(mut stream: TcpStream) {
         let directory = request_line_parts[1];
         println!("{}", directory);
         let contents;
+        let mut content_type = "*/*";
 
-        if directory == "/favicon.ico" {
+        if directory == "/favicon.png" {
             contents = fs::read("static/icons/favicon.png").unwrap();
+            content_type = "image/png";
 
+        } else if directory.starts_with("/static/") {
+            let file_path = &directory[1..];
+            contents = fs::read(file_path).unwrap();
         } else {
             contents = fs::read("content/index.html").unwrap();
+            content_type = "text/html";
         }
 
         let length = contents.len();
 
         let response = format!(
-            "HTTP/1.1 200 OK\r\nContent-Length: {}\r\n\r\n",
-            length
+            "HTTP/1.1 200 OK\r\nContent-Type: {}\r\nContent-Length: {}\r\n\r\n",
+            content_type, length
         );
 
         let _ = stream.write_all(response.as_bytes());
