@@ -7,31 +7,54 @@
       name="viewport"
     />
     <title>Matthew Rogers</title>
-    <link rel="icon" type="image/png" href="/favicon.ico" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
     <style>
+      @font-face {
+        font-family: "Chivo Mono";
+        src: url("/static/fonts/ChivoMono-ExtraLight.ttf");
+        font-weight: 300;
+        font-style: normal;
+      }
+      @font-face {
+        font-family: "Chivo Mono";
+        src: url("/static/fonts/ChivoMono-Regular.ttf");
+        font-weight: 700;
+        font-style: normal;
+      }
       body {
-        background-color: #1a1b26;
+        background-color: #05050a;
         max-width: 80%;
         margin: auto;
-        margin-top: 100px;
+        margin-top: 120px;
         margin-bottom: 150px;
-        font-family: "Courier New", Courier, monospace;
+        font-family: "Chivo Mono", Courier, monospace;
+        font-weight: 300;
       }
       h1 {
         color: #7aa2f7;
+        font-weight: 300;
       }
       h2 {
-        color: #9aa5ce;
+        color: #e5e7eb;
+        font-size: 0.9em;
+        letter-spacing: .03em;;
+        font-weight: 700;
       }
       p {
-        color: #a9b1d6;
+        color: #e5e7eb;
+        font-weight: 300;
+        letter-spacing: .03em;
+        font-size: 0.9em;
       }
       a {
         color: #9ece6a;
       }
+      body > div {
+        margin-left: 20px;
+      }
       @media screen and (min-width: 1024px) {
         body {
-          max-width: 40%;
+          max-width: 50%;
         }
       }
     </style>
@@ -42,67 +65,117 @@
           '<a href="mailto:' + a + "@" + b + c + '">' + a + "@" + b + c + "</a>"
         );
       }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        const pool = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+        const R = 75, active = new Set();
+
+        // wrap visible text characters in spans
+        const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+          acceptNode: n => /SCRIPT|STYLE/.test(n.parentNode.tagName) || !n.nodeValue.trim()
+            ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+        });
+        const textNodes = [];
+        while (walk.nextNode()) textNodes.push(walk.currentNode);
+        textNodes.forEach(n => {
+          const wrap = document.createElement('span');
+          wrap.innerHTML = [...n.nodeValue].map(c =>
+            /[\s\[\]>]/.test(c) ? c : `<span data-o="${c}">${c}</span>`
+          ).join('');
+          n.parentNode.replaceChild(wrap, n);
+        });
+
+        // Cache character positions (document-relative)
+        const spans = [...document.querySelectorAll('[data-o]')];
+        let pos = [];
+        function cache() {
+          pos = spans.map(el => {
+            const r = el.getBoundingClientRect();
+            return { el, x: r.left + r.width / 2 + scrollX, y: r.top + r.height / 2 + scrollY };
+          });
+        }
+        cache();
+        addEventListener('resize', cache);
+
+        document.addEventListener('mousemove', function(e) {
+          const R2 = R * R;
+          for (const p of pos) {
+            if (active.has(p.el)) continue;
+            const dx = p.x - e.pageX, dy = p.y - e.pageY;
+            if (dx * dx + dy * dy > R2) continue;
+            active.add(p.el);
+            let i = 0, max = 3 + (Math.random() * 5 | 0);
+            const iv = setInterval(() => {
+              p.el.textContent = pool[(Math.random() * pool.length) | 0];
+              if (++i >= max) { clearInterval(iv); p.el.textContent = p.el.dataset.o; active.delete(p.el); }
+            }, 60);
+          }
+        });
+      });
     </script>
   </head>
   <body>
-    <h1>Hello World!</h1>
-    <p>Hey there, I'm Matthew, and this is my personal website!</p>
-
-    <br />
-    <h2>> About Me</h2>
-    <p>
-      I find learning and creating extremely fulfulling. I'm particularly
-      interested in working with and designing systems of any sort. I've been
-      drawn to fields involving computers, but I also try to spend time in the
-      worlds of motorsport, architecture, and graphic design.
-      <br /><br />
-
-      I'm an undergraduate software engineering student at
-      <a href="https://eng.auburn.edu/" target="_blank">Auburn University</a>. I
-      enjoy my work in theoretical computer science, system design, and
-      cybersecurity. I sometimes engage with philosophy and mathematics.
-      <br /><br />
-
-      I also help organize
-      <a href="https://www.auburnhacks.com/" target="_blank">Auburn Hacks</a>,
-      the annual 24-hour hackathon held at Auburn University in the spring. If
-      you're in the American Southeast and are interested in technology, be sure
-      to register. <br /><br />
-      Professionally, I'm an undergraduate researcher at Auburn University,
-      focusing on finding vulnerabilities in IaC tools and compilers. My past
-      experience includes roles as a Cybersecurity Analyst, where I mitigated
-      threats for the university, and as a Software Engineering Intern,
-      developing enterprise backend applications.
+    <h2>Matthew Rogers</h2>
+    <p>Software Engineer
       <br /><br />
     </p>
-    <h2>> Projects</h2>
-    <p>
-      Outside of academia and industry, I continue to work on projects that I'm
-      especially passionate about. One of my largest is an
-      <a href="https://okfn.org/en/" target="_blank">open data</a> platform
-      currently applied in the form of
-      <a href="https://www.openauburn.org" target="_blank">Open Auburn</a>.
+    <div>
+      <p>[About]</p>
+      <p>
+        I find learning and creating extremely fulfulling. I'm particularly
+        interested in working with and designing systems of any sort. I've been
+        drawn to fields involving computers, but I also try to spend time in the
+        worlds of motorsport, architecture, and graphic design.
+        <br /><br />
+  
+        I'm an undergraduate software engineering student at
+        <a href="https://eng.auburn.edu/" target="_blank">Auburn University</a>. I
+        enjoy my work in theoretical computer science, system design, and
+        cybersecurity. I sometimes engage with philosophy and mathematics.
+        <br /><br />
+  
+        I also help organize
+        <a href="https://www.auburnhacks.com/" target="_blank">Auburn Hacks</a>,
+        the annual 24-hour hackathon held at Auburn University in the spring. If
+        you're in the American Southeast and are interested in technology, be sure
+        to register. <br /><br />
+        Professionally, I'm an undergraduate researcher at Auburn University,
+        focusing on finding vulnerabilities in IaC tools and compilers. My past
+        experience includes roles as a Cybersecurity Analyst, where I mitigated
+        threats for the university, and as a Software Engineering Intern,
+        developing enterprise backend applications.
+        <br /><br />
+      </p>
+      <p>[Projects]</p>
+      <p>
+        Outside of academia and industry, I continue to work on projects that I'm
+        especially passionate about. One of my largest is an
+        <a href="https://okfn.org/en/" target="_blank">open data</a> platform
+        currently applied in the form of
+        <a href="https://www.openauburn.org" target="_blank">Open Auburn</a>.
+  
+        <br /><br />As this site progresses I'll talk more about open data and my
+        projects, but for now I encourage you to browse my
+        <a href="https://www.github.com/matt-rog" target="_blank">GitHub</a>.
+        <br /><br />
+      </p>
 
-      <br /><br />As this site progresses I'll talk more about open data and my
-      projects, but for now I encourage you to browse my
-      <a href="https://www.github.com/matt-rog" target="_blank">GitHub</a>.
-    </p>
 
-    <br />
-    <h2>> Contact</h2>
-    <p>
-      Feel free to reach about to me about computers, Auburn, employment, or
-      whatever else!
-      <br /><br />
-      Email:
-      <script type="text/javascript">
-        scramble("auburn", "mr");
-      </script>
-      <br />
-      LinkedIn:
-      <a href="https://www.linkedin.com/in/matt-rog/" target="_blank"
-        >in/matt-rog/</a
-      >
-    </p>
+      <p>[Contact]</p>
+      <p>
+        Feel free to reach about to me about computers, Auburn, employment, or
+        whatever else!
+        <br /><br />
+        Email:
+        <script type="text/javascript">
+          scramble("auburn", "mr");
+        </script>
+        <br />
+        LinkedIn:
+        <a href="https://www.linkedin.com/in/matt-rog/" target="_blank"
+          >in/matt-rog/</a
+        >
+      </p>
+    </div>
   </body>
 </html>
