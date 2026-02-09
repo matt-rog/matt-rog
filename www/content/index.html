@@ -69,6 +69,18 @@
         opacity: 0.35;
         mix-blend-mode: overlay;
       }
+      .nav-highlight {
+        background: #c0c2c8 !important;
+        color: #08080d !important;
+        text-shadow: none !important;
+      }
+      a.nav-highlight {
+        background: #74a352 !important;
+        color: #08080d !important;
+        text-shadow: none !important;
+        position: relative;
+        z-index: 10000;
+      }
       @media screen and (min-width: 1024px) {
         body {
           max-width: 50%;
@@ -213,5 +225,34 @@
         <br /><br />
       </p>
     </div>
+    <script>
+      (function() {
+        const navItems = [...document.querySelectorAll('a[href]')];
+        let navIdx = -1;
+
+        function setNav(idx) {
+          if (navIdx >= 0) navItems[navIdx].classList.remove('nav-highlight');
+          navIdx = idx;
+          if (navIdx >= 0) {
+            navItems[navIdx].classList.add('nav-highlight');
+            navItems[navIdx].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          }
+        }
+
+        document.addEventListener('keydown', e => {
+          if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'j') {
+            e.preventDefault();
+            setNav(Math.min(navIdx + 1, navItems.length - 1));
+          } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'k') {
+            e.preventDefault();
+            setNav(Math.max(navIdx - 1, 0));
+          } else if (e.key === 'Enter' && navIdx >= 0) {
+            navItems[navIdx].click();
+          } else if (e.key === 'Escape') {
+            setNav(-1);
+          }
+        });
+      })();
+    </script>
   </body>
 </html>
