@@ -58,61 +58,80 @@
         }
       }
     </style>
-    <script type="text/javascript">
-      function scramble(b, a) {
-        var c = ".edu";
-        document.write(
-          '<a href="mailto:' + a + "@" + b + c + '">' + a + "@" + b + c + "</a>"
-        );
-      }
+<script type="text/javascript">
+const pool = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
 
-      document.addEventListener('DOMContentLoaded', function() {
-        const pool = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-        const R = 75, active = new Set();
+const BASE_R = 10;
+const MIN_R = 10;
+const MAX_R = 80;
+const SPEED_FACTOR = 50;
+const ALPHA = 0.8;
 
-        // wrap visible text characters in spans
-        const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
-          acceptNode: n => /SCRIPT|STYLE/.test(n.parentNode.tagName) || !n.nodeValue.trim()
-            ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
-        });
-        const textNodes = [];
-        while (walk.nextNode()) textNodes.push(walk.currentNode);
-        textNodes.forEach(n => {
-          const wrap = document.createElement('span');
-          wrap.innerHTML = [...n.nodeValue].map(c =>
-            /[\s\[\]>]/.test(c) ? c : `<span data-o="${c}">${c}</span>`
-          ).join('');
-          n.parentNode.replaceChild(wrap, n);
-        });
+let currentR = BASE_R, currentR2 = currentR * currentR;
+let prevX = null, prevY = null, prevTime = null;
 
-        // Cache character positions (document-relative)
-        const spans = [...document.querySelectorAll('[data-o]')];
-        let pos = [];
-        function cache() {
-          pos = spans.map(el => {
-            const r = el.getBoundingClientRect();
-            return { el, x: r.left + r.width / 2 + scrollX, y: r.top + r.height / 2 + scrollY };
-          });
+document.addEventListener('DOMContentLoaded', () => {
+  const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+    acceptNode: n => /SCRIPT|STYLE/.test(n.parentNode.tagName) || !n.nodeValue.trim()
+      ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+  });
+  const textNodes = [];
+  while (walk.nextNode()) textNodes.push(walk.currentNode);
+  textNodes.forEach(n => {
+    const wrap = document.createElement('span');
+    wrap.innerHTML = [...n.nodeValue].map(c =>
+      /[\s**\[\]**>]/.test(c) ? c : `<span data-o="${c}">${c}</span>`
+    ).join('');
+    n.parentNode.replaceChild(wrap, n);
+  });
+
+  const spans = [...document.querySelectorAll('[data-o]')];
+  const pos = [];
+  const cache = () => {
+    pos.length = 0;
+    spans.forEach(el => {
+      const r = el.getBoundingClientRect();
+      pos.push({ el,
+        x: r.left + r.width / 2 + scrollX,
+        y: r.top + r.height / 2 + scrollY });
+    });
+  };
+  cache();
+  window.addEventListener('resize', cache);
+
+  const active = new Set();
+
+  document.addEventListener('mousemove', e => {
+    if (prevX !== null && prevY !== null && prevTime !== null) {
+      const dx = e.pageX - prevX, dy = e.pageY - prevY;
+      const dist = Math.hypot(dx, dy);
+      const dt = e.timeStamp - prevTime;
+      const speed = dt > 0 ? dist / dt : 0;
+      let newR = BASE_R + speed * SPEED_FACTOR;
+      currentR = ALPHA * newR + (1 - ALPHA) * currentR;
+      currentR = Math.max(MIN_R, Math.min(MAX_R, currentR));
+      currentR2 = currentR * currentR;
+    }
+    prevX = e.pageX; prevY = e.pageY; prevTime = e.timeStamp;
+
+    for (const p of pos) {
+      if (active.has(p.el)) continue;
+      const dx = p.x - e.pageX, dy = p.y - e.pageY;
+      if (dx * dx + dy * dy > currentR2) continue;
+      active.add(p.el);
+      let i = 0, max = 3 + (Math.random() * 5 | 0);
+      const iv = setInterval(() => {
+        p.el.textContent = pool[(Math.random() * pool.length) | 0];
+        if (++i >= max) {
+          clearInterval(iv);
+          p.el.textContent = p.el.dataset.o;
+          active.delete(p.el);
         }
-        cache();
-        addEventListener('resize', cache);
-
-        document.addEventListener('mousemove', function(e) {
-          const R2 = R * R;
-          for (const p of pos) {
-            if (active.has(p.el)) continue;
-            const dx = p.x - e.pageX, dy = p.y - e.pageY;
-            if (dx * dx + dy * dy > R2) continue;
-            active.add(p.el);
-            let i = 0, max = 3 + (Math.random() * 5 | 0);
-            const iv = setInterval(() => {
-              p.el.textContent = pool[(Math.random() * pool.length) | 0];
-              if (++i >= max) { clearInterval(iv); p.el.textContent = p.el.dataset.o; active.delete(p.el); }
-            }, 60);
-          }
-        });
-      });
-    </script>
+      }, 60);
+    }
+  });
+});
+</script>
   </head>
   <body>
     <h2>Matthew Rogers</h2>
