@@ -22,13 +22,17 @@
         font-style: normal;
       }
       body {
-        background-color: #08080d;
+        background-color: #0a0a0d;
         max-width: 80%;
         margin: auto;
         margin-top: 120px;
         margin-bottom: 150px;
         font-family: "Chivo Mono", Courier, monospace;
         font-weight: 300;
+        scrollbar-width: none;
+      }
+      body::-webkit-scrollbar {
+        display: none;
       }
       h1 {
         color: #7aa2f7;
@@ -66,7 +70,7 @@
         width: 100%; height: 100%;
         pointer-events: none;
         z-index: 9999;
-        opacity: 0.35;
+        opacity: 0.12;
         mix-blend-mode: overlay;
       }
       .nav-highlight {
@@ -83,7 +87,7 @@
       }
       @media screen and (min-width: 1024px) {
         body {
-          max-width: 50%;
+          max-width: 750px;
         }
       }
     </style>
@@ -129,6 +133,17 @@
       window.addEventListener('resize', cache);
 
       const active = new Set();
+
+      // Per-character opacity jitter
+      setInterval(() => {
+        const count = Math.ceil(spans.length * 0.5);
+        for (let i = 0; i < count; i++) {
+          const span = spans[(Math.random() * spans.length) | 0];
+          if (active.has(span)) continue;
+          span.style.opacity = 0.88 + Math.random() * 0.12;
+          setTimeout(() => { span.style.opacity = ''; }, 100);
+        }
+      }, 110);
 
       document.addEventListener('mousemove', e => {
         if (prevX !== null && prevY !== null && prevTime !== null) {
