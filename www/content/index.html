@@ -26,6 +26,10 @@
         max-width: 80%;
         margin: auto;
         margin-top: 120px;
+        overscroll-behavior: none;
+      }
+      html {
+        overscroll-behavior: none;
         margin-bottom: 150px;
         font-family: "Chivo Mono", Courier, monospace;
         font-weight: 300;
@@ -53,7 +57,7 @@
         text-shadow: 0 0 12px rgba(192, 194, 200, 0.6);
       }
       a {
-        color: #8bbf62;
+        color: #66c155;
         text-shadow: 0 0 12px rgba(139, 191, 98, 0.6);
       }
       body > div {
@@ -79,7 +83,7 @@
         text-shadow: none !important;
       }
       a.nav-highlight {
-        background: #74a352 !important;
+        background: #66c155 !important;
         color: #08080d !important;
         text-shadow: none !important;
         position: relative;
@@ -140,7 +144,7 @@
         for (let i = 0; i < count; i++) {
           const span = spans[(Math.random() * spans.length) | 0];
           if (active.has(span)) continue;
-          span.style.opacity = 0.88 + Math.random() * 0.12;
+          span.style.opacity = 0.9 + Math.random() * 0.1;
           setTimeout(() => { span.style.opacity = ''; }, 100);
         }
       }, 110);
@@ -201,8 +205,14 @@
 
       })();
     </script>
-    <h2>Matthew Rogers</h2>
-    <p>Software Engineer<br /><br /></p>
+    <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 0; margin-left: -60px;">
+      <img src="/static/icons/favicon.png" alt="" style="width: 48px; height: 48px;">
+      <div>
+        <h2 style="margin: 0;">Matthew Rogers</h2>
+        <p style="margin: 0;">Software Engineer</p>
+      </div>
+    </div>
+    <br />
     <div>
       <p>[About]</p>
       <p>
@@ -267,6 +277,7 @@
             setNav(-1);
           }
         });
+
       })();
     </script>
   </body>
