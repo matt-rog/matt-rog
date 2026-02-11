@@ -139,13 +139,16 @@
       const active = new Set();
 
       // Per-character opacity jitter
+      let jitterBatch = [];
       setInterval(() => {
+        for (const s of jitterBatch) s.style.opacity = '';
+        jitterBatch = [];
         const count = Math.ceil(spans.length * 0.5);
         for (let i = 0; i < count; i++) {
           const span = spans[(Math.random() * spans.length) | 0];
-          if (active.has(span)) continue;
+          if (active.has(span) || span.closest('.nav-highlight')) continue;
           span.style.opacity = 0.9 + Math.random() * 0.1;
-          setTimeout(() => { span.style.opacity = ''; }, 100);
+          jitterBatch.push(span);
         }
       }, 110);
 
@@ -260,6 +263,7 @@
           navIdx = idx;
           if (navIdx >= 0) {
             navItems[navIdx].classList.add('nav-highlight');
+            navItems[navIdx].querySelectorAll('[data-o]').forEach(s => s.style.opacity = '');
             navItems[navIdx].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
           }
         }
