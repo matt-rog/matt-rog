@@ -136,21 +136,33 @@
       cache();
       window.addEventListener('resize', cache);
 
-      const active = new Set();
+      const active = new Map();
 
-      // Per-character opacity jitter
       let jitterBatch = [];
       setInterval(() => {
-        for (const s of jitterBatch) s.style.opacity = '';
+        for (const s of jitterBatch) s.style.filter = '';
         jitterBatch = [];
+        if (window.getSelection().toString().length > 0) return;
         const count = Math.ceil(spans.length * 0.5);
         for (let i = 0; i < count; i++) {
           const span = spans[(Math.random() * spans.length) | 0];
           if (active.has(span) || span.closest('.nav-highlight')) continue;
-          span.style.opacity = 0.9 + Math.random() * 0.1;
+          span.style.filter = `brightness(${0.87 + Math.random() * 0.13})`;
           jitterBatch.push(span);
         }
-      }, 110);
+      }, 100);
+
+      setInterval(() => {
+        for (const [el, rem] of active) {
+          if (rem <= 0) {
+            el.textContent = el.dataset.o;
+            active.delete(el);
+          } else {
+            el.textContent = pool[(Math.random() * pool.length) | 0];
+            active.set(el, rem - 1);
+          }
+        }
+      }, 60);
 
       document.addEventListener('mousemove', e => {
         if (prevX !== null && prevY !== null && prevTime !== null) {
@@ -169,16 +181,7 @@
           if (active.has(p.el)) continue;
           const dx = p.x - e.pageX, dy = p.y - e.pageY;
           if (dx * dx + dy * dy > currentR2) continue;
-          active.add(p.el);
-          let i = 0, max = 3 + (Math.random() * 5 | 0);
-          const iv = setInterval(() => {
-            p.el.textContent = pool[(Math.random() * pool.length) | 0];
-            if (++i >= max) {
-              clearInterval(iv);
-              p.el.textContent = p.el.dataset.o;
-              active.delete(p.el);
-            }
-          }, 60);
+          active.set(p.el, 3 + (Math.random() * 5 | 0));
         }
       });
     });
@@ -188,7 +191,6 @@
     <canvas id="grain"></canvas>
     <script>
       (function() {
-        // Grain
         const c = document.getElementById('grain');
         const ctx = c.getContext('2d');
         const s = 256;
